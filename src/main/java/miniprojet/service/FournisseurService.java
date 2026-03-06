@@ -34,7 +34,7 @@ public class FournisseurService {
     public Fournisseur updateFournisseur(Long id, String nom, String email) {
         log.info("Modification fournisseur {}", id);
         Fournisseur fournisseur = fournisseurRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("Fournisseur " + id + " introuvable"));
+                .orElseThrow(() -> new NoSuchElementException("Fournisseur " + id + " introuvable"));
 
         if (StringUtils.hasText(nom)) {
             fournisseur.setNom(nom);
@@ -54,7 +54,7 @@ public class FournisseurService {
     @Transactional(readOnly = true)
     public Fournisseur findById(Long id) {
         return fournisseurRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("Fournisseur " + id + " introuvable"));
+                .orElseThrow(() -> new NoSuchElementException("Fournisseur " + id + " introuvable"));
     }
 
     @Transactional(readOnly = true)
@@ -68,14 +68,14 @@ public class FournisseurService {
     }
 
     /**
-     * Supprime un fournisseur par son identifiant.
-     * Gère la relation ManyToMany avec Categorie pour éviter les effets de bord indésirables.
+     * Supprime un fournisseur par son identifiant. Gère la relation ManyToMany
+     * avec Categorie pour éviter les effets de bord indésirables.
      */
     @Transactional
     public void deleteFournisseur(Long id) {
         log.info("Suppression fournisseur {}", id);
         Fournisseur fournisseur = findById(id);
-        
+
         // On rompt les liens avec les catégories (Categorie est le propriétaire de la relation)
         // On fait une copie de la liste pour itérer sans souci de concurrence
         List<miniprojet.entity.Categorie> categories = List.copyOf(fournisseur.getCategories());
@@ -85,7 +85,7 @@ public class FournisseurService {
             fournisseur.getCategories().remove(categorie);
             categorieRepository.save(categorie);
         }
-        
+
         fournisseurRepository.delete(fournisseur);
     }
 
@@ -94,8 +94,8 @@ public class FournisseurService {
         log.info("Ajout catégorie {} au fournisseur {}", categorieCode, fournisseurId);
         Fournisseur fournisseur = findById(fournisseurId);
         var categorie = categorieRepository.findById(categorieCode)
-            .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
-        
+                .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
+
         // Categorie est le owning side
         if (!categorie.getFournisseurs().contains(fournisseur)) {
             categorie.getFournisseurs().add(fournisseur);
@@ -110,8 +110,8 @@ public class FournisseurService {
         log.info("Retrait catégorie {} au fournisseur {}", categorieCode, fournisseurId);
         Fournisseur fournisseur = findById(fournisseurId);
         var categorie = categorieRepository.findById(categorieCode)
-            .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
-        
+                .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
+
         // Categorie est le owning side
         if (categorie.getFournisseurs().contains(fournisseur)) {
             categorie.getFournisseurs().remove(fournisseur);

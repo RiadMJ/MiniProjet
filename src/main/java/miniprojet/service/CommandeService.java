@@ -29,9 +29,9 @@ public class CommandeService {
     private final MedicamentRepository medicamentRepository;
 
     public CommandeService(CommandeRepository commandeRepository,
-                           DispensaireRepository dispensaireRepository,
-                           LigneRepository ligneRepository,
-                           MedicamentRepository medicamentRepository) {
+            DispensaireRepository dispensaireRepository,
+            LigneRepository ligneRepository,
+            MedicamentRepository medicamentRepository) {
         this.commandeRepository = commandeRepository;
         this.dispensaireRepository = dispensaireRepository;
         this.ligneRepository = ligneRepository;
@@ -39,8 +39,8 @@ public class CommandeService {
     }
 
     /**
-     * Ajoute un ligne à une commande. 
-     * Si le médicament est déjà dans la commande, la quantité est augmentée.
+     * Ajoute un ligne à une commande. Si le médicament est déjà dans la
+     * commande, la quantité est augmentée.
      */
     @Transactional
     public Ligne ajouterLigne(int commandeId, int medicamentRef, @Positive int quantite) {
@@ -49,8 +49,8 @@ public class CommandeService {
         // 1. Vérifications préalables
         // On récupère le médicament et on vérifie sa disponibilité
         var medicament = medicamentRepository.findById(medicamentRef)
-            .orElseThrow(() -> new NoSuchElementException("Médicament introuvable : " + medicamentRef));
-        
+                .orElseThrow(() -> new NoSuchElementException("Médicament introuvable : " + medicamentRef));
+
         if (medicament.isIndisponible()) {
             log.warn("Tentative de commande d'un médicament indisponible: {}", medicamentRef);
             throw new IllegalStateException("Ce médicament est actuellement indisponible.");
@@ -63,15 +63,15 @@ public class CommandeService {
 
         // On vérifie l'état de la commande
         var commande = commandeRepository.findById(commandeId)
-            .orElseThrow(() -> new NoSuchElementException("Commande introuvable : " + commandeId));
-            
+                .orElseThrow(() -> new NoSuchElementException("Commande introuvable : " + commandeId));
+
         if (commande.getEnvoyeele() != null) {
             throw new IllegalStateException("Impossible de modifier une commande déjà expédiée.");
         }
 
         // 2. Mise à jour ou création de la ligne
         var ligne = ligneRepository.findByCommandeAndMedicament(commande, medicament)
-            .orElseGet(() -> new Ligne(commande, medicament, 0));
+                .orElseGet(() -> new Ligne(commande, medicament, 0));
 
         // Mise à jour des compteurs
         ligne.setQuantite(ligne.getQuantite() + quantite);
@@ -82,15 +82,15 @@ public class CommandeService {
     }
 
     /**
-     * Initialise une nouvelle commande pour un dispensaire donné.
-     * Applique automatiquement la remise fidélité si applicable.
+     * Initialise une nouvelle commande pour un dispensaire donné. Applique
+     * automatiquement la remise fidélité si applicable.
      */
     @Transactional
     public Commande creerCommande(@NonNull String codeDispensaire) {
         log.info("Initialisation nouvelle commande pour le dispensaire {}", codeDispensaire);
-        
+
         var dispensaire = dispensaireRepository.findById(codeDispensaire)
-            .orElseThrow(() -> new NoSuchElementException("Dispensaire inconnu : " + codeDispensaire));
+                .orElseThrow(() -> new NoSuchElementException("Dispensaire inconnu : " + codeDispensaire));
 
         var nouvelleCommande = new Commande(dispensaire);
         nouvelleCommande.setAdresseLivraison(dispensaire.getAdresse());
@@ -107,6 +107,7 @@ public class CommandeService {
 
     /**
      * Retourne une commande par son identifiant
+     *
      * @param commandeNum l'identifiant de la commande
      * @return la commande
      * @throws NoSuchElementException si la commande n'existe pas
@@ -114,12 +115,13 @@ public class CommandeService {
     @Transactional(readOnly = true)
     public Commande getCommande(Integer commandeNum) {
         return commandeRepository.findById(commandeNum)
-            .orElseThrow(() -> new NoSuchElementException("Commande " + commandeNum + " introuvable"));
+                .orElseThrow(() -> new NoSuchElementException("Commande " + commandeNum + " introuvable"));
     }
 
     /**
-     * Enregistre l'expédition d'une commande.
-     * La commande passe à l'état "envoyée".
+     * Enregistre l'expédition d'une commande. La commande passe à l'état
+     * "envoyée".
+     *
      * @param commandeNum l'identifiant de la commande
      * @return la commande mise à jour
      * @throws IllegalStateException si la commande est déjà expédiée
@@ -137,8 +139,8 @@ public class CommandeService {
     }
 
     /**
-     * Supprime une ligne de commande.
-     * Le stock est rétabli.
+     * Supprime une ligne de commande. Le stock est rétabli.
+     *
      * @param ligneId l'identifiant de la ligne
      * @throws IllegalStateException si la commande est déjà expédiée
      */
@@ -146,22 +148,23 @@ public class CommandeService {
     public void supprimerLigne(Integer ligneId) {
         log.info("Suppression de la ligne {}", ligneId);
         var ligne = ligneRepository.findById(ligneId)
-            .orElseThrow(() -> new NoSuchElementException("Ligne " + ligneId + " introuvable"));
-        
+                .orElseThrow(() -> new NoSuchElementException("Ligne " + ligneId + " introuvable"));
+
         var commande = ligne.getCommande();
         if (commande.getEnvoyeele() != null) {
             throw new IllegalStateException("Impossible de modifier une commande expédiée.");
         }
-        
+
         var medicament = ligne.getMedicament();
         // On rétablit les "unités commandées" (réservées)
         medicament.setUnitesCommandees(medicament.getUnitesCommandees() - ligne.getQuantite());
-        
+
         ligneRepository.delete(ligne);
     }
 
     /**
      * Retourne la liste des commandes en cours pour un dispensaire.
+     *
      * @param codeDispensaire le code du dispensaire
      * @return la liste des commandes
      */
@@ -170,3 +173,15 @@ public class CommandeService {
         return commandeRepository.commandesEnCoursPour(codeDispensaire);
     }
 }
+
+     *
+     
+                 
+     * 
+     *
+       
+     *
+      
+                  
+     *
+     
