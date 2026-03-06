@@ -8,3 +8,16 @@ services:
     envVars:
       - key: PORT
         value: 10000
+      - key: SPRING_PROFILES_ACTIVE
+        value: deploy
+      - key: JDBC_URI
+        fromDatabase:
+          name: miniprojet-db
+          property: connectionString
+
+databases:
+  - name: miniprojet-db
+    databaseName: miniprojet
+    user: miniprojet
+    plan: free
+    region: frankfurt
