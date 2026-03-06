@@ -1,6 +1,7 @@
 package miniprojet.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.lang.NonNull;
@@ -102,5 +103,70 @@ public class CommandeService {
         }
 
         return commandeRepository.save(nouvelleCommande);
+    }
+
+    /**
+     * Retourne une commande par son identifiant
+     * @param commandeNum l'identifiant de la commande
+     * @return la commande
+     * @throws NoSuchElementException si la commande n'existe pas
+     */
+    @Transactional(readOnly = true)
+    public Commande getCommande(Integer commandeNum) {
+        return commandeRepository.findById(commandeNum)
+            .orElseThrow(() -> new NoSuchElementException("Commande " + commandeNum + " introuvable"));
+    }
+
+    /**
+     * Enregistre l'expédition d'une commande.
+     * La commande passe à l'état "envoyée".
+     * @param commandeNum l'identifiant de la commande
+     * @return la commande mise à jour
+     * @throws IllegalStateException si la commande est déjà expédiée
+     */
+    @Transactional
+    public Commande enregistreExpedition(Integer commandeNum) {
+        log.info("Expédition de la commande {}", commandeNum);
+        // On réutilise la méthode getCommande pour ne pas dupliquer le code
+        var commande = getCommande(commandeNum);
+        if (commande.getEnvoyeele() != null) {
+            throw new IllegalStateException("La commande est déjà expédiée.");
+        }
+        commande.setEnvoyeele(java.time.LocalDate.now());
+        return commandeRepository.save(commande);
+    }
+
+    /**
+     * Supprime une ligne de commande.
+     * Le stock est rétabli.
+     * @param ligneId l'identifiant de la ligne
+     * @throws IllegalStateException si la commande est déjà expédiée
+     */
+    @Transactional
+    public void supprimerLigne(Integer ligneId) {
+        log.info("Suppression de la ligne {}", ligneId);
+        var ligne = ligneRepository.findById(ligneId)
+            .orElseThrow(() -> new NoSuchElementException("Ligne " + ligneId + " introuvable"));
+        
+        var commande = ligne.getCommande();
+        if (commande.getEnvoyeele() != null) {
+            throw new IllegalStateException("Impossible de modifier une commande expédiée.");
+        }
+        
+        var medicament = ligne.getMedicament();
+        // On rétablit les "unités commandées" (réservées)
+        medicament.setUnitesCommandees(medicament.getUnitesCommandees() - ligne.getQuantite());
+        
+        ligneRepository.delete(ligne);
+    }
+
+    /**
+     * Retourne la liste des commandes en cours pour un dispensaire.
+     * @param codeDispensaire le code du dispensaire
+     * @return la liste des commandes
+     */
+    @Transactional(readOnly = true)
+    public List<Commande> getCommandeEnCoursPour(String codeDispensaire) {
+        return commandeRepository.commandesEnCoursPour(codeDispensaire);
     }
 }

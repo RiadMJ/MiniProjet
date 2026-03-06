@@ -66,4 +66,58 @@ public class FournisseurService {
     public List<Fournisseur> findByCategorieCode(Integer codeCategorie) {
         return fournisseurRepository.findByCategorieCode(codeCategorie);
     }
+
+    /**
+     * Supprime un fournisseur par son identifiant.
+     * Gère la relation ManyToMany avec Categorie pour éviter les effets de bord indésirables.
+     */
+    @Transactional
+    public void deleteFournisseur(Long id) {
+        log.info("Suppression fournisseur {}", id);
+        Fournisseur fournisseur = findById(id);
+        
+        // On rompt les liens avec les catégories (Categorie est le propriétaire de la relation)
+        // On fait une copie de la liste pour itérer sans souci de concurrence
+        List<miniprojet.entity.Categorie> categories = List.copyOf(fournisseur.getCategories());
+        for (var categorie : categories) {
+            categorie.getFournisseurs().remove(fournisseur);
+            // On met aussi à jour le côté inverse pour la cohérence en mémoire
+            fournisseur.getCategories().remove(categorie);
+            categorieRepository.save(categorie);
+        }
+        
+        fournisseurRepository.delete(fournisseur);
+    }
+
+    @Transactional
+    public Fournisseur ajouterCategorie(Long fournisseurId, Integer categorieCode) {
+        log.info("Ajout catégorie {} au fournisseur {}", categorieCode, fournisseurId);
+        Fournisseur fournisseur = findById(fournisseurId);
+        var categorie = categorieRepository.findById(categorieCode)
+            .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
+        
+        // Categorie est le owning side
+        if (!categorie.getFournisseurs().contains(fournisseur)) {
+            categorie.getFournisseurs().add(fournisseur);
+            fournisseur.getCategories().add(categorie);
+            categorieRepository.save(categorie);
+        }
+        return fournisseur;
+    }
+
+    @Transactional
+    public Fournisseur retirerCategorie(Long fournisseurId, Integer categorieCode) {
+        log.info("Retrait catégorie {} au fournisseur {}", categorieCode, fournisseurId);
+        Fournisseur fournisseur = findById(fournisseurId);
+        var categorie = categorieRepository.findById(categorieCode)
+            .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
+        
+        // Categorie est le owning side
+        if (categorie.getFournisseurs().contains(fournisseur)) {
+            categorie.getFournisseurs().remove(fournisseur);
+            fournisseur.getCategories().remove(categorie);
+            categorieRepository.save(categorie);
+        }
+        return fournisseur;
+    }
 }
