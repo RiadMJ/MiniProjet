@@ -39,8 +39,8 @@ class CommandeServiceTest {
     void testAjouterLigne() {
         // Créer une commande
         Commande commande = commandeService.creerCommande("DSP01");
-        // Médicament 1 = Paracétamol 500mg, stock = 500
-        Ligne ligne = commandeService.ajouterLigne(commande.getNumero(), 1, 10);
+        // Médicament 2 = Paracétamol 1000mg, stock = 350
+        Ligne ligne = commandeService.ajouterLigne(commande.getNumero(), 2, 10);
         assertNotNull(ligne.getId());
         assertEquals(10, ligne.getQuantite());
     }
@@ -56,18 +56,18 @@ class CommandeServiceTest {
     @Test
     void testAjouterLigneCommandeDejaExpediee() {
         Commande commande = commandeService.creerCommande("DSP01");
-        commandeService.ajouterLigne(commande.getNumero(), 1, 5);
+        commandeService.ajouterLigne(commande.getNumero(), 2, 5);
         commandeService.enregistreExpedition(commande.getNumero());
 
         assertThrows(IllegalStateException.class, () -> {
-            commandeService.ajouterLigne(commande.getNumero(), 2, 3);
+            commandeService.ajouterLigne(commande.getNumero(), 3, 3);
         });
     }
 
     @Test
     void testSupprimerLigne() {
         Commande commande = commandeService.creerCommande("DSP01");
-        Ligne ligne = commandeService.ajouterLigne(commande.getNumero(), 1, 10);
+        Ligne ligne = commandeService.ajouterLigne(commande.getNumero(), 2, 10);
         commandeService.supprimerLigne(ligne.getId());
         // Vérifier que la commande n'a plus de lignes
         Commande updated = commandeService.getCommande(commande.getNumero());
@@ -77,7 +77,7 @@ class CommandeServiceTest {
     @Test
     void testEnregistreExpedition() {
         Commande commande = commandeService.creerCommande("DSP01");
-        commandeService.ajouterLigne(commande.getNumero(), 1, 5);
+        commandeService.ajouterLigne(commande.getNumero(), 2, 5);
 
         Commande expediee = commandeService.enregistreExpedition(commande.getNumero());
         assertNotNull(expediee.getEnvoyeele());
@@ -86,7 +86,7 @@ class CommandeServiceTest {
     @Test
     void testEnregistreExpeditionDejaExpediee() {
         Commande commande = commandeService.creerCommande("DSP01");
-        commandeService.ajouterLigne(commande.getNumero(), 1, 5);
+        commandeService.ajouterLigne(commande.getNumero(), 2, 5);
         commandeService.enregistreExpedition(commande.getNumero());
 
         assertThrows(IllegalStateException.class, () -> {

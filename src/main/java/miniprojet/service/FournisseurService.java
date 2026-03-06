@@ -97,11 +97,13 @@ public class FournisseurService {
                 .orElseThrow(() -> new NoSuchElementException("Catégorie " + categorieCode + " introuvable"));
 
         // Categorie est le owning side
-        if (!categorie.getFournisseurs().contains(fournisseur)) {
-            categorie.getFournisseurs().add(fournisseur);
-            fournisseur.getCategories().add(categorie);
-            categorieRepository.save(categorie);
+        if (categorie.getFournisseurs().contains(fournisseur)) {
+            throw new IllegalStateException("Fournisseur déjà associé à cette catégorie.");
         }
+
+        categorie.getFournisseurs().add(fournisseur);
+        fournisseur.getCategories().add(categorie);
+        categorieRepository.save(categorie);
         return fournisseur;
     }
 
