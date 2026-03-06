@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: miniprojet
+    env: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    envVars:
+      - key: PORT
+        value: 10000
