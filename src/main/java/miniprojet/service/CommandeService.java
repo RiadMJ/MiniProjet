@@ -173,15 +173,3 @@ public class CommandeService {
         return commandeRepository.commandesEnCoursPour(codeDispensaire);
     }
 }
-
-     *
-     
-                 
-     * 
-     *
-       
-     *
-      
-                  
-     *
-     
