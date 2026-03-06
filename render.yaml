@@ -10,10 +10,26 @@ services:
         value: 10000
       - key: SPRING_PROFILES_ACTIVE
         value: deploy
-      - key: JDBC_URI
+      - key: DB_HOST
         fromDatabase:
           name: miniprojet-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: miniprojet-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: miniprojet-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: miniprojet-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: miniprojet-db
+          property: password
 
 databases:
   - name: miniprojet-db
